@@ -3,10 +3,17 @@
 #include <FastLED.h>
 #include <EEPROM.h>
 #include <Ticker.h>
+#include <memory>
+#include <vector>
 #include "MyNewFile.h"
 #include "Ota.h"
+#include "RgbServer.h"
 #include "Plotter.h"
 #include "RemoteDebug.h" //https://github.com/JoaoLopesF/RemoteDebug
+
+using namespace std;
+
+ESP8266WebServer server(80);
 
 RemoteDebug Debug;
 
@@ -34,7 +41,7 @@ enum WiFiStatus
   WORK
 };
 
-ESP8266WebServer server(80);
+vector<unique_ptr<BaseClass>> lifecycle;
 
 bool swch;
 CRGB rgbColor;
@@ -143,15 +150,9 @@ void setBrightness()
 
 void getBrightness()
 {
-  debugD("value = %d", hsvColor.val);
-  debugD("value * 100= %d", hsvColor.val * 100);
-  debugD("value * 100 / 255= %d", hsvColor.val * 100 / 255);
-  debugD("((int)hsvColor.val * 100 / 255)= %d", ((int)hsvColor.val * 100 / 255));
-  debugD("String((int)((int)hsvColor.val * 100 / 255)= %s", String((int)((int)hsvColor.val * 100 / 255)));
-  debugD("String(hsvColor.val * 100 / 255) = %s", String(hsvColor.val * 100 / 255));
   String value = String(hsvColor.val * 100 / 255);
   server.send(200, "text/plain", value);
-  
+  debugD("value = %s", value);
 }
 
 void setHue()
@@ -179,7 +180,7 @@ void getHue()
 {
   String value = String(hsvColor.hue * 360 / 255);
   server.send(200, "text/plain", value);
-  debugD("hue = %d", value);
+  debugD("hue = %s", value);
 }
 
 void setSaturation()
@@ -205,9 +206,9 @@ void setSaturation()
 
 void getSaturation()
 {
-  String value = String((int)hsvColor.sat * 100 / 255);
+  String value = String(hsvColor.sat * 100 / 255);
   server.send(200, "text/plain", value);
-  debugD("sat = %d", value);
+  debugD("sat = %s", value);
 }
 
 // prepare a web page to be send to a client (web browser)
@@ -299,12 +300,15 @@ void setupWiFi()
 
     server.begin();
 
-    otaStartup();
-
     Debug.begin("myesp8266");
     Debug.setResetCmdEnabled(true); // Enable the reset command
 
     wfStatus = WORK;
+
+    for (auto const &item : lifecycle)
+    {
+      item.get()->setupConnected();
+    }
   }
 }
 
@@ -331,6 +335,13 @@ void setup()
 
   // Add time graphs. Notice the effect of points displayed on the time scale
   p.AddTimeGraph("HSV graph", 1000, "Hue", hsvColor.h, "Sat", hsvColor.s, "Val", hsvColor.v);
+
+  lifecycle.push_back(make_unique<OtaUpdate>());
+
+  for (auto const &item : lifecycle)
+  {
+    item.get()->setup();
+  }
 }
 
 void loop()
@@ -353,8 +364,13 @@ void loop()
   if (wfStatus == WORK)
   {
     server.handleClient();
-    otaLoop();
+    // otaUpdate->loopConnected();
     Debug.handle();
+
+    for (auto const &item : lifecycle)
+    {
+      item.get()->loopConnected();
+    }
   }
 
   showColor();
@@ -364,5 +380,10 @@ void loop()
     writeEEPROM();
     changeTime = 0;
     timer = 0;
+  }
+
+  for (auto const &item : lifecycle)
+  {
+    item.get()->loop();
   }
 }

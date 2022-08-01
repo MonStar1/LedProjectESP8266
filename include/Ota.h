@@ -1,7 +1,12 @@
 #include <ArduinoOTA.h>
+#include "BaseClass.h"
 
-void otaStartup()
+class OtaUpdate : public BaseClass
 {
+public:
+  void setup(){}
+  void setupConnected()
+  {
     ArduinoOTA.setPort(8266);
     ArduinoOTA.setHostname("myesp8266");
     ArduinoOTA.setPassword("0776");
@@ -38,9 +43,12 @@ void otaStartup()
     ArduinoOTA.begin();
 
     Serial.println("ArduinoOTA startup");
-}
+  }
 
-void otaLoop()
-{
+  void loopConnected()
+  {
     ArduinoOTA.handle();
-}
+  }
+
+  void loop() {}
+};
