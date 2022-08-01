@@ -7,15 +7,13 @@
 #include <vector>
 #include "MyNewFile.h"
 #include "Ota.h"
-#include "RgbServer.h"
+#include "LEDServer.h"
 #include "Plotter.h"
-#include "RemoteDebug.h" //https://github.com/JoaoLopesF/RemoteDebug
+#include "LogDebug.h"
 
 using namespace std;
 
 ESP8266WebServer server(80);
-
-RemoteDebug Debug;
 
 // Plotted variables must be declared as globals
 double x;
@@ -299,10 +297,7 @@ void setupWiFi()
     server.on("/blink", startBlink);
 
     server.begin();
-
-    Debug.begin("myesp8266");
-    Debug.setResetCmdEnabled(true); // Enable the reset command
-
+    
     wfStatus = WORK;
 
     for (auto const &item : lifecycle)
@@ -336,7 +331,9 @@ void setup()
   // Add time graphs. Notice the effect of points displayed on the time scale
   p.AddTimeGraph("HSV graph", 1000, "Hue", hsvColor.h, "Sat", hsvColor.s, "Val", hsvColor.v);
 
+  lifecycle.push_back(make_unique<LogDebug>());
   lifecycle.push_back(make_unique<OtaUpdate>());
+  lifecycle.push_back(make_unique<LEDServer>());
 
   for (auto const &item : lifecycle)
   {
@@ -364,8 +361,6 @@ void loop()
   if (wfStatus == WORK)
   {
     server.handleClient();
-    // otaUpdate->loopConnected();
-    Debug.handle();
 
     for (auto const &item : lifecycle)
     {

@@ -1,5 +1,6 @@
 #include <ArduinoOTA.h>
 #include "BaseClass.h"
+#include "LogDebug.h"
 
 class OtaUpdate : public BaseClass
 {

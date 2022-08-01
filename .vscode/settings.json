@@ -9,6 +9,10 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "ranges": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "bit": "cpp",
+        "map": "cpp",
+        "*.tcc": "cpp",
+        "set": "cpp"
     }
 }
