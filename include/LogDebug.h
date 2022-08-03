@@ -1,5 +1,6 @@
 #ifndef LOGDEBUG_H
 #define LOGDEBUG_H
+#include <FastLED.h>
 #include "BaseClass.h"
 #include "RemoteDebug.h" //https://github.com/JoaoLopesF/RemoteDebug
 
@@ -25,4 +26,4 @@ class LogDebug : public BaseClass
     }
 };
 
-#endif //LOGDEBUG_H
+#endif // LOGDEBUG_H
