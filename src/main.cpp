@@ -15,15 +15,16 @@
 #include "LedConfig.h"
 #include "RainbowLed.h"
 #include "BlackLed.h"
+#include "LaunchLed.h"
+#include "LoadingLed.h"
+#include "SinLed.h"
 
 using namespace std;
 
-// Plotted variables must be declared as globals
-double x;
-double y;
-
 // Also declare plotter as global
 Plotter p;
+
+int ledMode = 0;
 
 unique_ptr<BaseLed> baseLed;
 
@@ -43,8 +44,6 @@ void setupWiFi()
 {
   if (wfStatus == NONE)
   {
-    debugD();
-
     WiFi.begin("KoPoHa", "07760776");
     debugD("Connecting");
     wfStatus = CONNECTING;
@@ -72,10 +71,12 @@ void setupWiFi()
   }
 }
 
+void ledServerCallback(ESP8266WebServer server)
+{
+}
 void setup()
 {
   Serial.begin(115200);
-
   pinMode(LED_BUILTIN, OUTPUT);
   setupLed();
 
@@ -94,10 +95,9 @@ void setup()
     item.get()->setup();
   }
 
-  baseLed = make_unique<DaggerLed>();
+  baseLed = make_unique<BlackLed>();
 }
 
-int counter = 0;
 void loop()
 {
   setupWiFi();
@@ -114,24 +114,22 @@ void loop()
     item.get()->loop();
   }
 
-  baseLed = make_unique<BlackLed>();
-
-  EVERY_N_SECONDS(5)
-  {
-    clearLed();
-    switch (counter++ % 3)
-    {
-    case 0:
-      baseLed = make_unique<RainbowLed>();
-      break;
-    case 1:
-      baseLed = make_unique<DaggerLed>();
-      break;
-    default:
-      baseLed = make_unique<BlackLed>();
-      break;
-    }
-  }
+  // EVERY_N_SECONDS(5)
+  // {
+  //   clearLed();
+  //   switch (ledMode++ % 3)
+  //   {
+  //   case 0:
+  //     baseLed = make_unique<RainbowLed>();
+  //     break;
+  //   case 1:
+  //     baseLed = make_unique<DaggerLed>();
+  //     break;
+  //   default:
+  //     baseLed = make_unique<BlackLed>();
+  //     break;
+  //   }
+  // }
 
   baseLed.get()->loop();
 }

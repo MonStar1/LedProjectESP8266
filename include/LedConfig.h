@@ -3,7 +3,7 @@
 #ifndef LEDCONFIG_H
 #define LEDCONFIG_H
 
-#define NUM_LEDS 50
+#define NUM_LEDS 150
 #define DATA_PIN D1
 
 CRGB leds[NUM_LEDS];

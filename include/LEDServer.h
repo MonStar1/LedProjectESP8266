@@ -12,6 +12,7 @@
 class LEDServer : public BaseClass
 {
 public:
+    // LEDServer(std::function<void(ESP8266WebServer)> ledModeCallback);
     ESP8266WebServer server = ESP8266WebServer(80);
     CHSV hsvColor;
     void setup()
@@ -41,6 +42,8 @@ public:
                   { setSaturation(); });
         server.on("/getSaturation", [&]()
                   { getSaturation(); });
+        // server.on("/ledMode", [&]()
+        //           { ledModeCallback(server); });
 
         server.begin();
     }
@@ -65,6 +68,7 @@ public:
     }
 
 private:
+    std::function<void(ESP8266WebServer)> ledModeCallback;
     bool swch;
     CRGB rgbColor;
 
@@ -261,3 +265,8 @@ private:
         hsv2rgb_rainbow(hsvColor, rgbColor);
     }
 };
+
+// LEDServer::LEDServer(std::function<void(ESP8266WebServer)> ledModeCallback)
+// {
+//     this->ledModeCallback = ledModeCallback;
+// }
