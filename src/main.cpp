@@ -18,6 +18,9 @@
 #include "LaunchLed.h"
 #include "LoadingLed.h"
 #include "SinLed.h"
+#include "PositionLed.h"
+#include "NoiseLed.h"
+#include "StarsLed.h"
 
 using namespace std;
 
@@ -26,7 +29,7 @@ Plotter p;
 
 int ledMode = 0;
 
-unique_ptr<BaseLed> baseLed;
+unique_ptr<BaseLed> baseLed = make_unique<BlackLed>();
 
 enum WiFiStatus
 {
@@ -36,7 +39,7 @@ enum WiFiStatus
   WORK
 };
 
-vector<unique_ptr<BaseClass>> lifecycle;
+vector<shared_ptr<BaseClass>> lifecycle;
 
 WiFiStatus wfStatus = NONE;
 
@@ -71,9 +74,47 @@ void setupWiFi()
   }
 }
 
-void ledServerCallback(ESP8266WebServer server)
+void setMode(int mode)
 {
+  debugD("setMode: %d", mode);
+
+  ledMode = mode;
+  clearLed();
+
+  switch (ledMode)
+  {
+  case 0:
+    baseLed = make_unique<RainbowLed>();
+    break;
+  case 1:
+    baseLed = make_unique<DaggerLed>();
+    break;
+  case 2:
+    baseLed = make_unique<LaunchLed>();
+    break;
+  case 3:
+    baseLed = make_unique<LoadingLed>();
+    break;
+  case 4:
+    baseLed = make_unique<SinLed>();
+    break;
+  case 5:
+    baseLed = make_unique<PositionLed>(30, NUM_LEDS - 1);
+    break;
+  case 6:
+    baseLed = make_unique<NoiseLed>();
+    break;
+  case 7:
+    baseLed = make_unique<StarsLed>();
+    break;
+  default:
+    baseLed = make_unique<BlackLed>();
+    break;
+  }
 }
+
+shared_ptr<LEDServer> ledServer = make_shared<LEDServer>(setMode);
+
 void setup()
 {
   Serial.begin(115200);
@@ -86,16 +127,14 @@ void setup()
   // Add time graphs. Notice the effect of points displayed on the time scale
   // p.AddTimeGraph("HSV graph", 1000, "Hue", hsvColor.h, "Sat", hsvColor.s, "Val", hsvColor.v);
 
-  lifecycle.push_back(make_unique<LogDebug>());
-  lifecycle.push_back(make_unique<OtaUpdate>());
-  lifecycle.push_back(make_unique<LEDServer>());
+  lifecycle.push_back(make_shared<LogDebug>());
+  lifecycle.push_back(make_shared<OtaUpdate>());
+  lifecycle.push_back(ledServer);
 
   for (auto const &item : lifecycle)
   {
     item.get()->setup();
   }
-
-  baseLed = make_unique<BlackLed>();
 }
 
 void loop()
@@ -113,23 +152,6 @@ void loop()
   {
     item.get()->loop();
   }
-
-  // EVERY_N_SECONDS(5)
-  // {
-  //   clearLed();
-  //   switch (ledMode++ % 3)
-  //   {
-  //   case 0:
-  //     baseLed = make_unique<RainbowLed>();
-  //     break;
-  //   case 1:
-  //     baseLed = make_unique<DaggerLed>();
-  //     break;
-  //   default:
-  //     baseLed = make_unique<BlackLed>();
-  //     break;
-  //   }
-  // }
 
   baseLed.get()->loop();
 }

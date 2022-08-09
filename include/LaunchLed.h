@@ -12,6 +12,7 @@ private:
     bool setup = true;
     bool step1 = false;
     bool step2 = false;
+    int speed = (4 - NUM_LEDS / 50) * 10;
 
 public:
     void loop()
@@ -32,7 +33,7 @@ public:
         // step 1
         if (step1)
         {
-            EVERY_N_MILLIS(10)
+            EVERY_N_MILLIS(speed)
             {
                 for (int i = offset1; i < offset2; i++)
                 {
@@ -56,7 +57,7 @@ public:
         // step 2
         if (step2)
         {
-            EVERY_N_MILLIS(10)
+            EVERY_N_MILLIS(speed)
             {
                 for (int i = 0; i < offset1; i++)
                 {
@@ -75,13 +76,9 @@ public:
                 if (offset1 == NUM_LEDS / 2)
                 {
                     step2 = false;
+                    setup = true;
                 }
             }
-        }
-
-        // loop step
-        if (!setup && !step1)
-        {
         }
 
         FastLED.show();

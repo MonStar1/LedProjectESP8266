@@ -4,10 +4,16 @@
 class BlackLed : public BaseLed
 {
 private:
+    bool executed = false;
+
 public:
     void loop()
     {
-        clearLed();
-        FastLED.show();
+        if (!executed)
+        {
+            executed = true;
+            clearLed();
+            FastLED.show();
+        }
     }
 };
