@@ -139,13 +139,16 @@ void setup()
 
 void loop()
 {
-  setupWiFi();
   if (wfStatus == WORK)
   {
     for (auto const &item : lifecycle)
     {
       item.get()->loopConnected();
     }
+  }
+  else
+  {
+    setupWiFi();
   }
 
   for (auto const &item : lifecycle)
