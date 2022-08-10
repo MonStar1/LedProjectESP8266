@@ -150,7 +150,7 @@ void loop()
   {
     setupWiFi();
   }
-
+  
   for (auto const &item : lifecycle)
   {
     item.get()->loop();
