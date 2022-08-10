@@ -139,11 +139,6 @@ void setup()
 
 void loop()
 {
-  for (auto const &item : lifecycle)
-  {
-    item.get()->loop();
-  }
-
   if (wfStatus == WORK)
   {
     for (auto const &item : lifecycle)
@@ -154,6 +149,11 @@ void loop()
   else
   {
     setupWiFi();
+  }
+  
+  for (auto const &item : lifecycle)
+  {
+    item.get()->loop();
   }
 
   baseLed.get()->loop();
