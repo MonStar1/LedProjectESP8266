@@ -1,7 +1,7 @@
 #include "BaseLed.h"
 #include "LedConfig.h"
 
-class NoiseLed : public BaseLed
+class BreathLed : public BaseLed
 {
 private:
 public:

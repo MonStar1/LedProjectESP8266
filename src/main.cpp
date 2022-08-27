@@ -19,7 +19,7 @@
 #include "LoadingLed.h"
 #include "SinLed.h"
 #include "PositionLed.h"
-#include "NoiseLed.h"
+#include "BreathLed.h"
 #include "StarsLed.h"
 #include "FlameLed.h"
 
@@ -85,7 +85,7 @@ void setMode(int mode)
   switch (ledMode)
   {
   case 0:
-    baseLed = make_shared<NoiseLed>();
+    baseLed = make_shared<BreathLed>();
     break;
   case 1:
     baseLed = make_shared<FlameLed>();

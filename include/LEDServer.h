@@ -35,7 +35,7 @@ public:
     void setupConnected()
     {
         server.on("/", [&]()
-                  { handleRoot(); });
+                  { handleSwitch(); });
         server.on("/status", [&]()
                   { status(); });
         server.on("/setBrightness", [&]()
@@ -52,9 +52,7 @@ public:
                   { getSaturation(); });
         server.on("/ledMode", [&]()
                   { 
-                    turnOff();
-                    currentMode = server.arg("mode").toInt();
-                    modeCallback(currentMode);
+                    setMode(server.arg("mode").toInt());
                     server.send(200, "text", "OK"); });
 
         server.on("/ledStatus", [&]()
@@ -102,9 +100,28 @@ private:
 
     void setMode(int mode)
     {
-        turnOff();
+        turnOffLed();
+        FastLED.setBrightness(255);
         currentMode = mode;
         modeCallback(currentMode);
+        changeTime = timer;
+    }
+
+    void turnOffLed()
+    {
+        swch = false;
+        currentMode = 255;
+        modeCallback(currentMode);
+        FastLED.show();
+        changeTime = timer;
+    }
+
+    void turnOnLed()
+    {
+        swch = true;
+        currentMode = 255;
+        modeCallback(currentMode);
+        changeTime = timer;
     }
 
     void ledStatus()
@@ -121,15 +138,7 @@ private:
         }
     }
 
-    void turnOff()
-    {
-        swch = false;
-        currentMode = 255;
-        fill_solid(leds, NUM_LEDS, CHSV(0, 0, 0));
-        FastLED.show();
-    }
-
-    void handleRoot()
+    void handleSwitch()
     {
         for (uint8_t i = 0; i < server.args(); i++)
         {
@@ -141,40 +150,39 @@ private:
             }
         }
 
-        if (!swch)
+        if (swch)
         {
-            fill_solid(leds, NUM_LEDS, CHSV(0, 0, 0));
-            FastLED.show();
+            turnOnLed();
         }
         else
         {
-            currentMode = 255;
-            modeCallback(255);
+            turnOffLed();
         }
 
         server.send(200, "text/plain", "OK");
-
-        changeTime = timer;
     }
 
     void switchLed()
     {
         debugD("button clicked");
-        swch = !swch;
 
-        if (swch)
+        if (currentMode != 255)
         {
-            color = CHSV(0, 0, 255);
-            fill_solid(leds, NUM_LEDS, CHSV(0, 0, 0));
-            FastLED.show();
+            turnOffLed();
         }
         else
         {
-            currentMode = 255;
-            modeCallback(255);
-        }
+            swch = !swch;
 
-        changeTime = timer;
+            if (swch)
+            {
+                turnOnLed();
+            }
+            else
+            {
+                turnOffLed();
+            }
+        }
     }
 
     void doubleClick()
@@ -286,7 +294,7 @@ private:
 
     void printHSV()
     {
-        debugD("HSV: h=%d s=%d v=%d", color.h, color.s, color.v);
+        debugD("HSV: h=%d s=%d v=%d", color.h, color.s, FastLED.getBrightness());
     }
 
     void writeEEPROM()
@@ -308,8 +316,11 @@ private:
 
         if (swch)
         {
-            currentMode = 255;
-            modeCallback(255);
+            turnOnLed();
+        }
+        else
+        {
+            turnOffLed();
         }
     }
 };
