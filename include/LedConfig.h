@@ -19,6 +19,7 @@ void clearLed()
 void setupLed()
 {
     FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS); // GRB ordering is typical
+    FastLED.setBrightness(255);
     clearLed();
     FastLED.show();
 }

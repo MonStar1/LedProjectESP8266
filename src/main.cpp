@@ -21,6 +21,7 @@
 #include "PositionLed.h"
 #include "NoiseLed.h"
 #include "StarsLed.h"
+#include "FlameLed.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ Plotter p;
 
 int ledMode = 0;
 
-unique_ptr<BaseLed> baseLed = make_unique<BlackLed>();
+shared_ptr<BaseLed> baseLed = make_shared<BlackLed>();
 
 enum WiFiStatus
 {
@@ -84,31 +85,34 @@ void setMode(int mode)
   switch (ledMode)
   {
   case 0:
-    baseLed = make_unique<RainbowLed>();
+    baseLed = make_shared<NoiseLed>();
     break;
   case 1:
-    baseLed = make_unique<DaggerLed>();
+    baseLed = make_shared<FlameLed>();
     break;
   case 2:
-    baseLed = make_unique<LaunchLed>();
+    baseLed = make_shared<PositionLed>(30, NUM_LEDS - 1);
     break;
   case 3:
-    baseLed = make_unique<LoadingLed>();
+    baseLed = make_shared<LoadingLed>();
     break;
   case 4:
-    baseLed = make_unique<SinLed>();
+    baseLed = make_shared<SinLed>();
     break;
   case 5:
-    baseLed = make_unique<PositionLed>(30, NUM_LEDS - 1);
+    baseLed = make_shared<LaunchLed>();
     break;
   case 6:
-    baseLed = make_unique<NoiseLed>();
+    baseLed = make_shared<RainbowLed>();
     break;
   case 7:
-    baseLed = make_unique<StarsLed>();
+    baseLed = make_shared<StarsLed>();
+    break;
+  case 8:
+    baseLed = make_shared<DaggerLed>();
     break;
   default:
-    baseLed = make_unique<BlackLed>();
+    baseLed = make_shared<BlackLed>();
     break;
   }
 }
@@ -118,7 +122,6 @@ shared_ptr<LEDServer> ledServer = make_shared<LEDServer>(setMode);
 void setup()
 {
   Serial.begin(115200);
-  pinMode(LED_BUILTIN, OUTPUT);
   setupLed();
 
   // Start plotter
@@ -150,7 +153,7 @@ void loop()
   {
     setupWiFi();
   }
-  
+
   for (auto const &item : lifecycle)
   {
     item.get()->loop();

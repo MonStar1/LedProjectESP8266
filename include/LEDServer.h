@@ -3,6 +3,10 @@
 #include <ESP8266WebServer.h>
 #include "LogDebug.h"
 #include "LedConfig.h"
+#include "Button2.h"
+
+#define BUTTON_PIN D4
+#define LED_PIN D7
 
 class LEDServer : public BaseClass
 {
@@ -16,6 +20,17 @@ public:
         EEPROM.begin(6);
         readEEPROM();
         showColor();
+        pinMode(LED_PIN, OUTPUT);
+        digitalWrite(LED_PIN, HIGH);
+        button.begin(BUTTON_PIN, INPUT_PULLUP);
+        button.setClickHandler([&](Button2 &btn)
+                               { switchLed(); });
+
+        button.setDoubleClickHandler([&](Button2 &btn)
+                                     { doubleClick(); });
+
+        button.setLongClickHandler([&](Button2 &btn)
+                                   { doubleClick(); });
     }
     void setupConnected()
     {
@@ -38,8 +53,12 @@ public:
         server.on("/ledMode", [&]()
                   { 
                     turnOff();
-                    modeCallback(server.arg("mode").toInt());
+                    currentMode = server.arg("mode").toInt();
+                    modeCallback(currentMode);
                     server.send(200, "text", "OK"); });
+
+        server.on("/ledStatus", [&]()
+                  { ledStatus(); });
 
         server.begin();
     }
@@ -57,6 +76,8 @@ public:
         }
 
         showColor();
+
+        button.loop();
     }
 
     void loopConnected()
@@ -67,6 +88,8 @@ public:
 private:
     ESP8266WebServer server = ESP8266WebServer(80);
 
+    Button2 button;
+
     bool swch;
     CHSV color = CHSV(0, 0, 255);
 
@@ -75,9 +98,33 @@ private:
 
     std::function<void(int)> modeCallback;
 
+    uint8_t currentMode = 255;
+
+    void setMode(int mode)
+    {
+        turnOff();
+        currentMode = mode;
+        modeCallback(currentMode);
+    }
+
+    void ledStatus()
+    {
+        int mode = server.arg(0).toInt();
+        debugD("ledStatus: %d", mode);
+        if (mode == currentMode)
+        {
+            server.send(200, "text/plain", "1");
+        }
+        else
+        {
+            server.send(200, "text/plain", "0");
+        }
+    }
+
     void turnOff()
     {
         swch = false;
+        currentMode = 255;
         fill_solid(leds, NUM_LEDS, CHSV(0, 0, 0));
         FastLED.show();
     }
@@ -101,12 +148,39 @@ private:
         }
         else
         {
+            currentMode = 255;
             modeCallback(255);
         }
 
         server.send(200, "text/plain", "OK");
 
         changeTime = timer;
+    }
+
+    void switchLed()
+    {
+        debugD("button clicked");
+        swch = !swch;
+
+        if (swch)
+        {
+            color = CHSV(0, 0, 255);
+            fill_solid(leds, NUM_LEDS, CHSV(0, 0, 0));
+            FastLED.show();
+        }
+        else
+        {
+            currentMode = 255;
+            modeCallback(255);
+        }
+
+        changeTime = timer;
+    }
+
+    void doubleClick()
+    {
+        debugD("button double clicked");
+        setMode(++currentMode);
     }
 
     void status()
@@ -131,7 +205,7 @@ private:
             String argValue = server.arg(i);
             if (argName == "brightness")
             {
-                FastLED.setBrightness(map(argValue.toInt(), 0, 100, 0, 255));
+                FastLED.setBrightness(map(argValue.toInt(), 0, 100, 1, 255));
             }
         }
 
@@ -234,6 +308,7 @@ private:
 
         if (swch)
         {
+            currentMode = 255;
             modeCallback(255);
         }
     }
