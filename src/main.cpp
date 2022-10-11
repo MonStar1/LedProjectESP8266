@@ -22,6 +22,7 @@
 #include "BreathLed.h"
 #include "StarsLed.h"
 #include "FlameLed.h"
+#include "UkraineLed.h"
 
 using namespace std;
 
@@ -110,6 +111,9 @@ void setMode(int mode)
     break;
   case 8:
     baseLed = make_shared<DaggerLed>();
+    break;
+  case 9:
+    baseLed = make_shared<UkraineLed>();
     break;
   default:
     baseLed = make_shared<BlackLed>();

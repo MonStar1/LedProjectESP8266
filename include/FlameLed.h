@@ -2,10 +2,10 @@
 #include "LedConfig.h"
 
 DEFINE_GRADIENT_PALETTE(heatmap_gp){
-    0, 0, 255, 100, // yellow
-    125, 0, 200, 2, // red
-    200, 0, 10, 0,   // black
-    255, 0, 0, 0};  // black
+    1, 0, 204, 51,    // orange
+    60, 188, 67, 0,   // blue
+    180, 0, 204, 51,  // orange
+    255, 188, 67, 0}; // blue
 
 class FlameLed : public BaseLed
 {

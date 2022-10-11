@@ -5,8 +5,12 @@
 #include "LedConfig.h"
 #include "Button2.h"
 
-#define BUTTON_PIN D4
-#define LED_PIN D7
+// #define BUTTON_PIN D4
+#define BTN_UP D5
+#define BTN_DOWN D6
+#define BTN_SWITCH D7
+
+Button2 buttonSwitch, buttonUp, buttonDown;
 
 class LEDServer : public BaseClass
 {
@@ -17,20 +21,23 @@ public:
     };
     void setup()
     {
+        pinMode(BTN_SWITCH, INPUT_PULLUP);
+        pinMode(BTN_UP, INPUT_PULLUP);
+        pinMode(BTN_DOWN, INPUT_PULLUP);
+
+        buttonSwitch.begin(BTN_SWITCH);
+        buttonSwitch.setClickHandler([&](Button2 &btn)
+                                     { switchLed(); });
+        buttonUp.begin(BTN_UP);
+        buttonUp.setClickHandler([&](Button2 &btn)
+                                 { modeNext(); });
+        buttonDown.begin(BTN_DOWN);
+        buttonDown.setClickHandler([&](Button2 &btn)
+                                   { modePrev(); });
+
         EEPROM.begin(6);
         readEEPROM();
         showColor();
-        pinMode(LED_PIN, OUTPUT);
-        digitalWrite(LED_PIN, HIGH);
-        button.begin(BUTTON_PIN, INPUT_PULLUP);
-        button.setClickHandler([&](Button2 &btn)
-                               { switchLed(); });
-
-        button.setDoubleClickHandler([&](Button2 &btn)
-                                     { doubleClick(); });
-
-        button.setLongClickHandler([&](Button2 &btn)
-                                   { doubleClick(); });
     }
     void setupConnected()
     {
@@ -75,7 +82,9 @@ public:
 
         showColor();
 
-        button.loop();
+        buttonSwitch.loop();
+        buttonUp.loop();
+        buttonDown.loop();
     }
 
     void loopConnected()
@@ -185,10 +194,26 @@ private:
         }
     }
 
-    void doubleClick()
+    void modeNext()
     {
-        debugD("button double clicked");
+        debugD("button modeNext clicked");
         setMode(++currentMode);
+    }
+
+    void modePrev()
+    {
+        debugD("button modePrev clicked");
+        uint8_t mod = currentMode - 1;
+        if (mod > 100)
+        {
+            mod = 0;
+        }
+
+        if (mod < 0)
+        {
+            mod = 0;
+        }
+        setMode(mod);
     }
 
     void status()
@@ -294,6 +319,8 @@ private:
 
     void printHSV()
     {
+        CRGB rgb = CRGB(color);
+        debugD("RGB: r=%d g=%d b=%d", rgb.r, rgb.g, rgb.b);
         debugD("HSV: h=%d s=%d v=%d", color.h, color.s, FastLED.getBrightness());
     }
 
