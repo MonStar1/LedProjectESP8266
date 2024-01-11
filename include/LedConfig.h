@@ -1,9 +1,9 @@
-#include <FastLED.h>
+// #include <FastLED.h>
 
 #ifndef LEDCONFIG_H
 #define LEDCONFIG_H
 
-#define NUM_LEDS 69
+#define NUM_LEDS 94
 #define DATA_PIN D1
 
 CRGB leds[NUM_LEDS];

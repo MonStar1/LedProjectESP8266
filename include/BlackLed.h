@@ -12,23 +12,20 @@ public:
     {
         if (!executed)
         {
-            executed = true;
-            clearLed();
+            fadeToBlackBy(leds, NUM_LEDS, 1);
             FastLED.show();
-        }
 
-        // EVERY_N_SECONDS(5)
-        // {
-        //     if (firstTime == false)
-        //     {
-        //         executed = true;
-        //         clearLed();
-        //         FastLED.show();
-        //     }
-        //     else
-        //     {
-        //         firstTime = false;
-        //     }
-        // }
+            EVERY_N_SECONDS(2)
+            {
+                if (firstTime)
+                {
+                    firstTime = false;
+                }
+                else
+                {
+                    executed = true;
+                }
+            }
+        }
     }
 };

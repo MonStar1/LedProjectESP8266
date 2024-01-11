@@ -81,38 +81,47 @@ void setMode(int mode)
   debugD("setMode: %d", mode);
 
   ledMode = mode;
-  clearLed();
 
   switch (ledMode)
   {
   case 0:
+    clearLed();
     baseLed = make_shared<BreathLed>();
     break;
   case 1:
+    clearLed();
     baseLed = make_shared<FlameLed>();
     break;
   case 2:
+    clearLed();
     baseLed = make_shared<PositionLed>(30, NUM_LEDS - 1);
     break;
   case 3:
+    clearLed();
     baseLed = make_shared<LoadingLed>();
     break;
   case 4:
+    clearLed();
     baseLed = make_shared<SinLed>();
     break;
   case 5:
+    clearLed();
     baseLed = make_shared<LaunchLed>();
     break;
   case 6:
+    clearLed();
     baseLed = make_shared<RainbowLed>();
     break;
   case 7:
+    clearLed();
     baseLed = make_shared<StarsLed>();
     break;
   case 8:
+    clearLed();
     baseLed = make_shared<DaggerLed>();
     break;
   case 9:
+    clearLed();
     baseLed = make_shared<UkraineLed>();
     break;
   default:

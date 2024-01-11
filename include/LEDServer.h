@@ -31,9 +31,20 @@ public:
         buttonUp.begin(BTN_UP);
         buttonUp.setClickHandler([&](Button2 &btn)
                                  { modeNext(); });
+
+        // buttonUp.setLongClickTime(50);
+        // buttonUp.setLongClickDetectedRetriggerable(true);
+        // buttonUp.setLongClickDetectedHandler([&](Button2 &btn)
+        //                                      { nextHue(); });
+
         buttonDown.begin(BTN_DOWN);
         buttonDown.setClickHandler([&](Button2 &btn)
                                    { modePrev(); });
+
+        // buttonDown.setLongClickTime(50);
+        // buttonDown.setLongClickDetectedRetriggerable(true);
+        // buttonDown.setLongClickDetectedHandler([&](Button2 &btn)
+        //                                        { prevHue(); });
 
         EEPROM.begin(6);
         readEEPROM();
@@ -102,6 +113,8 @@ private:
 
     int timer = 0;
     int changeTime = 0;
+
+    uint8_t warmPercentage = 0;
 
     std::function<void(int)> modeCallback;
 
@@ -197,14 +210,23 @@ private:
     void modeNext()
     {
         debugD("button modeNext clicked");
-        setMode(++currentMode);
+        uint8_t mod = currentMode + 1;
+        if (mod > 9)
+        {
+            mod = 0;
+        }
+        if (mod < 0)
+        {
+            mod = 0;
+        }
+        setMode(mod);
     }
 
     void modePrev()
     {
         debugD("button modePrev clicked");
         uint8_t mod = currentMode - 1;
-        if (mod > 100)
+        if (mod > 9)
         {
             mod = 0;
         }
@@ -213,6 +235,7 @@ private:
         {
             mod = 0;
         }
+
         setMode(mod);
     }
 
@@ -264,11 +287,16 @@ private:
             String argValue = server.arg(i);
             if (argName == "hue")
             {
-                color.h = (int)map(argValue.toInt(), 0, 360, 0, 255);
+                setHue((int)map(argValue.toInt(), 0, 360, 0, 255));
             }
         }
 
         server.send(200, "text/plain", "OK");
+    }
+
+    void setHue(uint8_t hue)
+    {
+        color.h = hue;
         debugD("hue = %d", color.hue);
 
         changeTime = timer;
@@ -280,6 +308,20 @@ private:
         String value = String(color.hue * 360 / 255);
         server.send(200, "text/plain", value);
         debugD("hue = %s", value);
+    }
+
+    void nextHue()
+    {
+        FastLED.setBrightness(255);
+        color = rgb2hsv_approximate(blend(Candle, DirectSunlight, warmPercentage++));
+        FastLED.show();
+    }
+
+    void prevHue()
+    {
+        FastLED.setBrightness(255);
+        color = rgb2hsv_approximate(blend(Candle, DirectSunlight, warmPercentage--));
+        FastLED.show();
     }
 
     void setSaturation()

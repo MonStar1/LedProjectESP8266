@@ -2,8 +2,8 @@
 #include "LedConfig.h"
 #include "LogDebug.h"
 
-CRGB blue = CRGB(188, 67, 0);
-CRGB orange = CRGB(0, 204, 51);
+String blinker = "mmamammmmammamamaaamammmaa";
+int counter = 0;
 
 class UkraineLed : public BaseLed
 {
@@ -13,19 +13,23 @@ private:
 public:
     void loop()
     {
-        if (!isInitialized)
+        EVERY_N_MILLIS(100)
         {
-            for (int i = 0; i < NUM_LEDS; i++)
+            fill_solid(leds, NUM_LEDS, DirectSunlight);
+            counter++;
+            int light = 255;
+
+            if (counter >= blinker.length())
             {
-                if (i % 2 == 0)
-                {
-                    leds[i] = blue;
-                } else {
-                    leds[i] = orange;
-                }
+                counter = 0;
             }
 
-            isInitialized = true;
+            if (blinker.charAt(counter) == 'a')
+            {
+                light = 0;
+            }
+
+            FastLED.setBrightness(light);
             FastLED.show();
         }
     }

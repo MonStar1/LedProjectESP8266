@@ -5,24 +5,45 @@
 class LoadingLed : public BaseLed
 {
 private:
-    int lightLedsCount = 1;
+    bool mode = true;
 
 public:
     void loop()
     {
-        EVERY_N_MILLISECONDS(100)
+        EVERY_N_MILLIS(500)
         {
-            for (int i = 0; i < lightLedsCount; i++)
+            mode = !mode;
+
+            if (mode)
             {
-                leds[i] = CRGB::White;
+                for (int i = 0; i < NUM_LEDS; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        leds[i] = CHSV(255, 255, 255);
+                    }
+                    else
+                    {
+                        leds[i] = CHSV(255, 255, 150);
+                    }
+                }
             }
-            lightLedsCount = lightLedsCount + 1;
-            debugD("lightLedsCount: %d", lightLedsCount);
-            if (lightLedsCount == NUM_LEDS)
+            else
             {
-                lightLedsCount = 1;
+                for (int i = 0; i < NUM_LEDS; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        leds[i] = CHSV(255, 255, 150);
+                    }
+                    else
+                    {
+                        leds[i] = CHSV(255, 255, 255);
+                    }
+                }
             }
         }
+
         FastLED.show();
     }
 };

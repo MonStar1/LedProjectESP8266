@@ -4,21 +4,45 @@
 class SinLed : public BaseLed
 {
 private:
-    CHSV color = CHSV(random8(), 255, 255);
+    bool mode = true;
 
 public:
     void loop()
     {
-        fadeToBlackBy(leds, NUM_LEDS, 2);
-
-        int pos = beatsin8(10, 0, NUM_LEDS, 0, 0);
-        leds[pos] = color;
-
-        if (pos == 0 || pos == NUM_LEDS)
+        EVERY_N_MILLIS(350)
         {
-            color = CHSV(random8(), 255, 255);
+            mode = !mode;
+
+            if (mode)
+            {
+                for (int i = 0; i < NUM_LEDS; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        leds[i] = CHSV(18, 255, 255);
+                    }
+                    else
+                    {
+                        leds[i] = CHSV(21, 222, 255);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < NUM_LEDS; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        leds[i] = CHSV(21, 222, 255);
+                    }
+                    else
+                    {
+                        leds[i] = CHSV(18, 255, 255);
+                    }
+                }
+            }
         }
-        
+
         FastLED.show();
     }
 };
